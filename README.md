@@ -31,6 +31,25 @@ python -m venv .venv
 .venv/bin/python -m streamlit run app.py
 ```
 
+### Windows (VS Code / PowerShell)
+
+```powershell
+git clone https://github.com/KayyyKrwn/bitcoin-predictor.git
+cd bitcoin-predictor
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+
+# 1. Training pertama (download data BTC + training, beberapa menit)
+python scripts/train.py
+
+# 2. Jalankan app (browser terbuka otomatis di http://localhost:8501)
+streamlit run app.py
+```
+
+Di VS Code: tekan `Ctrl+Shift+P` → "Python: Select Interpreter" → pilih
+yang ada `.venv`-nya, supaya VS Code pakai environment project ini.
+
 ## Halaman
 
 1. **Prediksi** — harga live + prediksi besok + tren 90 hari
