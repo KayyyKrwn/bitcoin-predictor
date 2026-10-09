@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.streamlit/
+# Artefak regenerable via scripts/train.py (tidak ikut ke git)
+models/*.weights.h5
+models/test_predictions.csv
+data/*.csv
+wheels/
