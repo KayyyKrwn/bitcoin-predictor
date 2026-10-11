@@ -1,68 +1,74 @@
-# Prediksi Harga Bitcoin dengan N-BEATS
+# Bitcoin Predictor — N-BEATS + HeroUI
 
-Web app Streamlit dari hasil skripsi Kia: prediksi harga penutupan BTC-USD
-1 hari ke depan memakai model **N-BEATS + Adam** (model terbaik skripsi:
-RMSE 1.790, MAPE 2,35%, R² 0,9969).
+Prediksi harga penutupan Bitcoin (BTC-USD) 1 hari ke depan memakai model
+**N-BEATS + Adam** — model terbaik dari skripsi Kia (RMSE 1.790, MAPE 2,35%,
+R² 0,9969 pada eksperimen utama; 4 arsitektur × 2 optimizer × 2 mode tuning).
 
-Data: BTC-USD harian **realtime dari Yahoo Finance**, 17 Sep 2014 – sekarang
-(Yahoo hanya menyimpan BTC-USD mulai tanggal itu).
+Aplikasi full-stack:
 
-## Struktur
+| Lapisan   | Teknologi                              |
+|-----------|----------------------------------------|
+| Frontend  | Next.js (App Router) + HeroUI v3 + Tailwind CSS v4 + Recharts |
+| Backend   | FastAPI — menyajikan model N-BEATS sebagai REST API |
+| Data      | BTC-USD harian realtime dari Yahoo Finance (17 Sep 2014 – sekarang) |
+
+Halaman: **Prediksi** (harga live + prediksi besok), **Data Historis**
+(grafik penuh + statistik), **Model & Skripsi** (arsitektur, hyperparameter,
+tabel perbandingan 8 eksperimen, performa model yang di-deploy).
+
+## Struktur repo
 
 ```
-├── app.py               # aplikasi Streamlit (3 halaman)
-├── nbeats_model.py      # arsitektur N-BEATS (disalin dari notebook skripsi)
-├── scripts/train.py     # training + evaluasi + simpan artefak
-├── data/               # cache CSV BTC-USD (diunduh otomatis)
-├── models/             # bobot, scaler, metrik, prediksi test set
-└── requirements.txt
+├── frontend/               # Next.js + HeroUI
+│   ├── app/                # 3 halaman: /, /history, /model
+│   ├── components/         # Navbar, PriceChart (recharts)
+│   └── lib/                # api.ts (client backend), format.ts
+├── backend/
+│   ├── main.py             # FastAPI: /api/predict, /api/history, /api/model
+│   ├── nbeats_model.py     # arsitektur N-BEATS (dari notebook skripsi)
+│   ├── scripts/train.py    # training + evaluasi
+│   ├── requirements.txt
+│   └── models/             # bobot, scaler, metrik (bobot tidak ikut git)
+└── README.md
 ```
 
-## Cara menjalankan
+## Menjalankan backend
 
 ```bash
+cd backend
 python -m venv .venv
-.venv/bin/pip install -r requirements.txt
-
-# 1. Training (sekali saja, ~5-10 menit di CPU)
-.venv/bin/python scripts/train.py
-
-# 2. Jalankan app
-.venv/bin/python -m streamlit run app.py
-```
-
-### Windows (VS Code / PowerShell)
-
-```powershell
-git clone https://github.com/KayyyKrwn/bitcoin-predictor.git
-cd bitcoin-predictor
-python -m venv .venv
-.venv\Scripts\activate
+# Windows: .venv\Scripts\activate | Linux/Mac: source .venv/bin/activate
 pip install -r requirements.txt
-
-# 1. Training pertama (download data BTC + training, beberapa menit)
-python scripts/train.py
-
-# 2. Jalankan app (browser terbuka otomatis di http://localhost:8501)
-streamlit run app.py
+uvicorn main:app --port 8000
 ```
 
-Di VS Code: tekan `Ctrl+Shift+P` → "Python: Select Interpreter" → pilih
-yang ada `.venv`-nya, supaya VS Code pakai environment project ini.
+> Pertama kali dijalankan, backend otomatis training model bila bobot belum
+> ada (data diunduh dari Yahoo Finance, training ~1 menit di CPU).
 
-## Halaman
+## Menjalankan frontend
 
-1. **Prediksi** — harga live + prediksi besok + tren 90 hari
-2. **Data Historis** — grafik penuh 2014–sekarang + statistik
-3. **Model & Skripsi** — arsitektur, hyperparameter, tabel perbandingan
-   8 eksperimen skripsi, dan performa model yang di-deploy
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Buka http://localhost:3000. Backend harus jalan di http://localhost:8000
+(atau set `NEXT_PUBLIC_API_URL` di `.env.local`).
+
+## API
+
+- `GET /api/health` — status
+- `GET /api/predict` — harga live, prediksi besok, 90 hari terakhir, metrik
+- `GET /api/history` — seluruh riwayat + statistik (ATH, kenaikan total)
+- `GET /api/model` — hyperparameter, metrik, perbandingan skripsi,
+  prediksi vs aktual (test set)
+- Dokumentasi interaktif: http://localhost:8000/docs
 
 ## Catatan deploy N-BEATS
 
-N-BEATS diimplementasikan sebagai custom Keras `Layer`/`Model`, jadi tidak
-bisa di-load dari file `.keras` polos. Solusinya (dipakai di sini):
-definisi class dibawa dalam `nbeats_model.py`, model dibangun ulang dari
-kode, lalu `load_weights()` — plus `CUSTOM_OBJECTS` bila memakai
-`load_model()`. Arsitektur dan hyperparameter 100% sama dengan skripsi.
+N-BEATS diimplementasikan sebagai custom Keras `Layer`/`Model`, sehingga
+arsitektur dibangun ulang dari kode (`backend/nbeats_model.py`) lalu
+`load_weights()` — 100% sama dengan skripsi.
 
 ⚠️ Project portofolio/edukasi, bukan saran investasi.

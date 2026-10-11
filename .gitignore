@@ -1,9 +1,17 @@
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+
+# Backend
+backend/__pycache__/
+backend/*.pyc
+backend/models/*.weights.h5
+backend/models/test_predictions.csv
+backend/data/*.csv
+
+# Umum
 .venv/
-__pycache__/
-*.pyc
-.streamlit/
-# Artefak regenerable via scripts/train.py (tidak ikut ke git)
-models/*.weights.h5
-models/test_predictions.csv
-data/*.csv
-wheels/
+.env
+.DS_Store
